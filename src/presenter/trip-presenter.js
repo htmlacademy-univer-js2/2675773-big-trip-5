@@ -6,6 +6,10 @@ import EditFormView from '../view/edit-form.js';
 import PointView from '../view/point.js';
 
 export default class TripPresenter {
+  constructor(model) {
+    this.model = model;
+  }
+
   init() {
     this.renderFilters();
     this.renderSort();
@@ -29,27 +33,46 @@ export default class TripPresenter {
 
   renderEditForm() {
     const eventsList = document.querySelector('.trip-events__list');
-    const editFormView = new EditFormView();
-    const listItem = document.createElement('li');
-    listItem.className = 'trip-events__item';
-    listItem.appendChild(editFormView.getElement());
-    eventsList.insertBefore(listItem, eventsList.firstChild);
+    const points = this.model.getPoints();
+    
+    if (points.length > 0) {
+      const point = points[0];
+      const destination = this.model.getDestinationById(point.destination);
+      const availableOffers = this.model.getOffersByType(point.type);
+      const selectedOffersIds = point.offers || [];
+      const allDestinations = this.model.getAllDestinations();
+      
+      const editFormView = new EditFormView(point, destination, availableOffers, selectedOffersIds, allDestinations);
+      const listItem = document.createElement('li');
+      listItem.className = 'trip-events__item';
+      listItem.appendChild(editFormView.getElement());
+      eventsList.insertBefore(listItem, eventsList.firstChild);
+    }
   }
 
   renderPoints() {
     const eventsList = document.querySelector('.trip-events__list');
-    for (let i = 0; i < 3; i++) {
-      const pointView = new PointView();
+    const points = this.model.getPoints();
+    
+    const pointsToRender = points.slice(0, 3);
+    
+    pointsToRender.forEach((point) => {
+      const destination = this.model.getDestinationById(point.destination);
+      const selectedOffers = this.model.getSelectedOffers(point);
+      
+      const pointView = new PointView(point, destination, selectedOffers);
       const listItem = document.createElement('li');
       listItem.className = 'trip-events__item';
       listItem.appendChild(pointView.getElement());
       eventsList.appendChild(listItem);
-    }
+    });
   }
 
   renderCreateForm() {
     const eventsList = document.querySelector('.trip-events__list');
-    const createFormView = new CreateFormView();
+    const defaultOffers = this.model.getOffersByType('flight');
+    const allDestinations = this.model.getAllDestinations();
+    const createFormView = new CreateFormView(defaultOffers, allDestinations);
     const listItem = document.createElement('li');
     listItem.className = 'trip-events__item';
     listItem.appendChild(createFormView.getElement());
