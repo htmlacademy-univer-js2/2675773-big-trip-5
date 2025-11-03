@@ -1,7 +1,17 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 export default class FiltersView extends AbstractView {
+  constructor({hasFuture = true, hasPresent = true, hasPast = true} = {}) {
+    super();
+    this.hasFuture = hasFuture;
+    this.hasPresent = hasPresent;
+    this.hasPast = hasPast;
+  }
+
   get template() {
+    const futureDisabled = this.hasFuture ? '' : 'disabled';
+    const presentDisabled = this.hasPresent ? '' : 'disabled';
+    const pastDisabled = this.hasPast ? '' : 'disabled';
     return `
       <form class="trip-filters" action="#" method="get">
         <div class="trip-filters__filter">
@@ -10,17 +20,17 @@ export default class FiltersView extends AbstractView {
         </div>
 
         <div class="trip-filters__filter">
-          <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
+          <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future" ${futureDisabled}>
           <label class="trip-filters__filter-label" for="filter-future">Future</label>
         </div>
 
         <div class="trip-filters__filter">
-          <input id="filter-present" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="present">
+          <input id="filter-present" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="present" ${presentDisabled}>
           <label class="trip-filters__filter-label" for="filter-present">Present</label>
         </div>
 
         <div class="trip-filters__filter">
-          <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past">
+          <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past" ${pastDisabled}>
           <label class="trip-filters__filter-label" for="filter-past">Past</label>
         </div>
 

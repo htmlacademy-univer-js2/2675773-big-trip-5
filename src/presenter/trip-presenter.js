@@ -4,6 +4,7 @@ import SortView from '../view/sort.js';
 import CreateFormView from '../view/create-form.js';
 import EditFormView from '../view/edit-form.js';
 import PointView from '../view/point.js';
+import EmptyView from '../view/empty.js';
 
 export default class TripPresenter {
   constructor(model) {
@@ -13,13 +14,26 @@ export default class TripPresenter {
   init() {
     this.renderFilters();
     this.renderSort();
+
+    const points = this.model.getPoints();
+    if (points.length === 0) {
+      this.renderEmpty();
+      return;
+    }
+
     this.renderPoints();
     this.renderCreateForm();
   }
 
   renderFilters() {
     const filtersContainer = document.querySelector('.trip-controls__filters');
-    const filtersView = new FiltersView();
+    const points = this.model.getPoints();
+    const now = new Date();
+    const hasFuture = points.some((p) => new Date(p.dateFrom) > now);
+    const hasPresent = points.some((p) => new Date(p.dateFrom) <= now && now <= new Date(p.dateTo));
+    const hasPast = points.some((p) => new Date(p.dateTo) < now);
+
+    const filtersView = new FiltersView({hasFuture, hasPresent, hasPast});
     render(filtersView, filtersContainer, RenderPosition.BEFOREEND);
   }
 
@@ -28,6 +42,13 @@ export default class TripPresenter {
     const h2 = tripEventsSection.querySelector('h2');
     const sortView = new SortView();
     render(sortView, h2, RenderPosition.AFTEREND);
+  }
+
+  renderEmpty() {
+    const tripEventsSection = document.querySelector('.trip-events');
+    const h2 = tripEventsSection.querySelector('h2');
+    const emptyView = new EmptyView();
+    render(emptyView, h2, RenderPosition.AFTEREND);
   }
 
   // Больше не рендерим форму редактирования сразу
