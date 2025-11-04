@@ -1,4 +1,4 @@
-import {render, replace} from '../framework/render.js';
+import {render, replace, remove} from '../framework/render.js';
 import PointView from '../view/point.js';
 import EditFormView from '../view/edit-form.js';
 
@@ -46,6 +46,16 @@ export default class PointPresenter {
     if (this.mode !== Mode.DEFAULT) {
       this.#replacePoint();
     }
+  }
+
+  destroy() {
+    if (this.pointView) {
+      remove(this.pointView);
+    }
+    if (this.editFormView) {
+      remove(this.editFormView);
+    }
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #replaceEdit() {

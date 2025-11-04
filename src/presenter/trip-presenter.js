@@ -1,6 +1,6 @@
 import {render, RenderPosition} from '../framework/render.js';
 import FiltersView from '../view/filters.js';
-import SortView from '../view/sort.js';
+import SortView, {SortType} from '../view/sort.js';
 import CreateFormView from '../view/create-form.js';
 import EmptyView from '../view/empty.js';
 import PointPresenter from './point-presenter.js';
@@ -9,6 +9,7 @@ export default class TripPresenter {
   constructor(model) {
     this.model = model;
     this.pointPresenters = [];
+    this.currentSortType = SortType.DAY;
   }
 
   init() {
@@ -40,8 +41,9 @@ export default class TripPresenter {
   renderSort() {
     const tripEventsSection = document.querySelector('.trip-events');
     const h2 = tripEventsSection.querySelector('h2');
-    const sortView = new SortView();
-    render(sortView, h2, RenderPosition.AFTEREND);
+    this.sortView = new SortView(this.currentSortType);
+    this.sortView.setSortTypeChangeHandler((sortType) => this.handleSortTypeChange(sortType));
+    render(this.sortView, h2, RenderPosition.AFTEREND);
   }
 
   renderEmpty() {
@@ -55,9 +57,7 @@ export default class TripPresenter {
 
   renderPoints() {
     const eventsList = document.querySelector('.trip-events__list');
-    const points = this.model.getPoints();
-    
-    const pointsToRender = points.slice(0, 3);
+    const pointsToRender = this.getSortedPoints();
     
     this.pointPresenters = pointsToRender.map((point) => {
       const destination = this.model.getDestinationById(point.destination);
@@ -98,6 +98,36 @@ export default class TripPresenter {
     presenter.resetView();
     // Полное переинициализирование представлений
     presenter.init();
+  }
+
+  handleSortTypeChange(sortType) {
+    if (this.currentSortType === sortType) {
+      return;
+    }
+    this.currentSortType = sortType;
+    this.clearPoints();
+    this.renderPoints();
+  }
+
+  getSortedPoints() {
+    const points = this.model.getPoints().slice(0, 3);
+    if (this.currentSortType === SortType.TIME) {
+      return points.sort((a, b) => (new Date(b.dateTo) - new Date(b.dateFrom)) - (new Date(a.dateTo) - new Date(a.dateFrom)));
+    }
+    if (this.currentSortType === SortType.PRICE) {
+      return points.sort((a, b) => b.basePrice - a.basePrice);
+    }
+    // SortType.DAY (по возрастанию даты начала)
+    return points.sort((a, b) => new Date(a.dateFrom) - new Date(b.dateFrom));
+  }
+
+  clearPoints() {
+    this.pointPresenters.forEach((p) => p.destroy());
+    this.pointPresenters = [];
+    const eventsList = document.querySelector('.trip-events__list');
+    if (eventsList) {
+      eventsList.innerHTML = '';
+    }
   }
 
   renderCreateForm() {
