@@ -73,6 +73,7 @@ export default class TripPresenter {
         selectedOffers,
         offersByType: this.model.getOffersByType(point.type),
         allDestinations: this.model.getAllDestinations(),
+        getOffersByType: (type) => this.model.getOffersByType(type),
         onModeChange: () => this.resetAllPointViews(),
         onDataChange: (updatedPoint) => this.updatePoint(updatedPoint)
       });
